@@ -1,6 +1,7 @@
 package com.tapdom.climbinglog;
 
 import java.util.List;
+import java.util.Random;
 
 import android.content.Context;
 import android.location.Location;
@@ -26,5 +27,17 @@ public class Tools {
         }
         
         return gps;
+    }
+    
+    public static String generateString(Random rng, String characters, int length) {
+        char[] text = new char[length];
+        for (int i = 0; i < length; i++) {
+            text[i] = characters.charAt(rng.nextInt(characters.length()));
+        }
+        return new String(text);
+    }
+    
+    public static String rndStr(Random rng, int length) {
+        return generateString(rng, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", length);
     }
 }

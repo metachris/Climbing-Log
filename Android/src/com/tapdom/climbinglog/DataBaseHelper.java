@@ -31,14 +31,14 @@ public class DataBaseHelper {
     }
 
     public long insert(LogEntry logEntry) {
-        this.insertStmt.bindString(1, logEntry.title);
-        this.insertStmt.bindDouble(2, logEntry.latitude);
-        this.insertStmt.bindDouble(3, logEntry.longitude);
-        this.insertStmt.bindString(4, logEntry.address);
-        this.insertStmt.bindString(5, logEntry.comment);
-        this.insertStmt.bindString(6, logEntry.partners);
-        this.insertStmt.bindLong(7, logEntry.date_start);
-        this.insertStmt.bindLong(8, logEntry.date_end);
+        if (logEntry.title != null) this.insertStmt.bindString(1, logEntry.title);
+        if (logEntry.latitude != null) this.insertStmt.bindDouble(2, logEntry.latitude);
+        if (logEntry.longitude != null) this.insertStmt.bindDouble(3, logEntry.longitude);
+        if (logEntry.address != null) this.insertStmt.bindString(4, logEntry.address);
+        if (logEntry.comment != null) this.insertStmt.bindString(5, logEntry.comment);
+        if (logEntry.partners != null) this.insertStmt.bindString(6, logEntry.partners);
+        if (logEntry.date_start != null) this.insertStmt.bindLong(7, logEntry.date_start);
+        if (logEntry.date_end != null) this.insertStmt.bindLong(8, logEntry.date_end);
         return this.insertStmt.executeInsert();
     }
 
@@ -46,13 +46,26 @@ public class DataBaseHelper {
         this.db.delete(TABLE_NAME, null, null);
     }
 
-    public List<String> selectAll() {
-        List<String> list = new ArrayList<String>();
-        Cursor cursor = this.db.query(TABLE_NAME, new String[] { "title", "address" }, 
+    public List<LogEntry> selectAll() {
+        return selectAll(0);
+    }
+    
+    public List<LogEntry> selectAll(int max_items) {
+        List<LogEntry> list = new ArrayList<LogEntry>();
+        Cursor cursor = this.db.query(TABLE_NAME, new String[] { "title", "latitude", "longitude", 
+                "address", "comment", "partners", "date_start", "date_end" }, 
                 null, null, null, null, "id desc");
+
+        int count = 0;
         if (cursor.moveToFirst()) {
             do {
-                list.add(cursor.getString(0)); 
+                list.add(new LogEntry(cursor.getString(0), Double.valueOf(cursor.getLong(1)), 
+                        Double.valueOf(cursor.getLong(2)), cursor.getString(3), 
+                        cursor.getString(4), cursor.getString(5), cursor.getLong(6), 
+                        cursor.getLong(7)));
+                
+                count++;
+                if (count == max_items) break;
             } while (cursor.moveToNext());
         }
         if (cursor != null && !cursor.isClosed()) {
