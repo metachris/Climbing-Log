@@ -4,16 +4,19 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:weightSum="1" android:paddingLeft="6dip" android:paddingRight="6dip" android:paddingBottom="2dip" android:paddingTop="2dip">
+
     <LinearLayout android:layout_width="match_parent" android:id="@+id/linearLayout1" android:layout_height="wrap_content">
         <TextView android:text="Location:" android:layout_height="wrap_content" android:id="@+id/textView1" android:layout_width="80dp"></TextView>
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/tv_location"></TextView>
     </LinearLayout>
+
+    <LinearLayout android:layout_width="match_parent" android:id="@+id/linearLayout2" android:layout_height="wrap_content">
+        <TextView android:text="Coords:" android:layout_height="wrap_content" android:layout_width="80dp"></TextView>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/tv_coords"></TextView>
+    </LinearLayout>
+
     <LinearLayout android:layout_width="match_parent" android:id="@+id/linearLayout2" android:layout_height="wrap_content">
         <TextView android:text="Date:" android:layout_height="wrap_content" android:id="@+id/textView2" android:layout_width="80dp"></TextView>
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/tv_date"></TextView>
-    </LinearLayout>
-    <LinearLayout android:layout_width="match_parent" android:id="@+id/linearLayout3" android:layout_height="wrap_content">
-        <TextView android:id="@+id/textView3" android:layout_height="wrap_content" android:text="Time start:" android:layout_width="80dp"></TextView>
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/tv_time_start"></TextView>
     </LinearLayout>
 </LinearLayout>

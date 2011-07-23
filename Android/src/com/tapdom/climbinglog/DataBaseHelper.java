@@ -12,7 +12,7 @@ import android.util.Log;
 
 public class DataBaseHelper {
     private static final String DATABASE_NAME = "main.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
     private static final String TABLE_NAME = "log_entries";
 
     private Context context;
@@ -46,23 +46,43 @@ public class DataBaseHelper {
         this.db.delete(TABLE_NAME, null, null);
     }
 
+    private Cursor getSelectCursor() {
+        Cursor cursor = this.db.query(TABLE_NAME, new String[] { "id", "title", "latitude", "longitude", 
+                "address", "comment", "partners", "date_start", "date_end" }, 
+                null, null, null, null, "id desc");
+        return cursor;
+    }
+    
+    public LogEntry selectLast() {
+        Cursor cursor = getSelectCursor();
+        if (cursor.moveToFirst()) {
+            LogEntry entry = new LogEntry(cursor.getString(1), Double.valueOf(cursor.getLong(2)), 
+                    Double.valueOf(cursor.getLong(3)), cursor.getString(4), 
+                    cursor.getString(5), cursor.getString(6), cursor.getLong(7), 
+                    cursor.getLong(8));
+            entry.id = cursor.getInt(0);
+            return entry;
+        }
+        
+        return null;
+    }
+
     public List<LogEntry> selectAll() {
         return selectAll(0);
     }
     
     public List<LogEntry> selectAll(int max_items) {
+        Cursor cursor = getSelectCursor();
         List<LogEntry> list = new ArrayList<LogEntry>();
-        Cursor cursor = this.db.query(TABLE_NAME, new String[] { "title", "latitude", "longitude", 
-                "address", "comment", "partners", "date_start", "date_end" }, 
-                null, null, null, null, "id desc");
-
         int count = 0;
         if (cursor.moveToFirst()) {
             do {
-                list.add(new LogEntry(cursor.getString(0), Double.valueOf(cursor.getLong(1)), 
-                        Double.valueOf(cursor.getLong(2)), cursor.getString(3), 
-                        cursor.getString(4), cursor.getString(5), cursor.getLong(6), 
-                        cursor.getLong(7)));
+                LogEntry entry = new LogEntry(cursor.getString(1), Double.valueOf(cursor.getLong(2)), 
+                        Double.valueOf(cursor.getLong(3)), cursor.getString(4), 
+                        cursor.getString(5), cursor.getString(6), cursor.getLong(7), 
+                        cursor.getLong(8));
+                entry.id = cursor.getInt(0);
+                list.add(entry);
                 
                 count++;
                 if (count == max_items) break;
@@ -84,8 +104,8 @@ public class DataBaseHelper {
             db.execSQL("CREATE TABLE " + TABLE_NAME + " (" + 
                 "id INTEGER PRIMARY KEY, " + 
                 "title TEXT, " +
-                "latitude INTEGER, " +
-                "longitude INTEGER, " +
+                "latitude REAL, " +
+                "longitude REAL, " +
                 "address TEXT, " + 
                 "comment TEXT, " + 
                 "partners TEXT, " + 

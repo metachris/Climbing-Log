@@ -38,7 +38,7 @@ public class AddEntryActivity extends Activity {
         // Get references to views we'll manipulate
         tvLocation = (TextView) findViewById(R.id.tv_location);
         tvDate = (TextView) findViewById(R.id.tv_date);
-        tvTimeStart = (TextView) findViewById(R.id.tv_time_start);
+//        tvTimeStart = (TextView) findViewById(R.id.tv_time_start);
         
         // Set date and time
         Calendar c = Calendar.getInstance(); 

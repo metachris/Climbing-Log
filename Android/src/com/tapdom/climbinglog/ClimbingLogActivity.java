@@ -1,7 +1,6 @@
 package com.tapdom.climbinglog;
 
 import java.io.IOException;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -19,7 +18,11 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -31,10 +34,13 @@ public class ClimbingLogActivity extends Activity {
     private String TAG = "ClimbingLogActivity";
 
     private static final int DIALOG_ADD_ENTRY = 1;
-    
+
+    private static final int CONTEXT_ITEM_EDIT = 0;
+    private static final int CONTEXT_ITEM_DELETE = 1;
+
     private TextView tvLocation;
     private TextView tvDate;
-    private TextView tvTimeStart;
+    private TextView tvCoords;
     private ListView lstLog;
     
     private LocationManager locationManager;
@@ -104,8 +110,8 @@ public class ClimbingLogActivity extends Activity {
         View layout = inflater.inflate(R.layout.add_entry, null);
 
         tvLocation = (TextView) layout.findViewById(R.id.tv_location);
+        tvCoords = (TextView) layout.findViewById(R.id.tv_coords);
         tvDate = (TextView) layout.findViewById(R.id.tv_date);
-        tvTimeStart = (TextView) layout.findViewById(R.id.tv_time_start);
                 
         Builder dialog = new AlertDialog.Builder(this);
         dialog.setView(layout);
@@ -118,7 +124,7 @@ public class ClimbingLogActivity extends Activity {
                 Long date = (lastDate != null) ? lastDate.getTime() : null;
                 LogEntry entry = new LogEntry(null, lat, lng, lastAddressString, null, null, date, null);
                 dbHelper.insert(entry);
-                logAdapter.add(entry);
+                logAdapter.insert(dbHelper.selectLast(), 0);  // querying from db to get the id (for edit, delete)
                 lstLog.invalidate();
             }
         });
@@ -154,8 +160,8 @@ public class ClimbingLogActivity extends Activity {
         public void onLocationChanged(Location location) {
             // Called when a new location is found by the network location provider.
             locationManager.removeUpdates(this);
-            
-            log("got location: " + location.getLatitude() + ", " + location.getLongitude());
+            lastLocation = location;
+            tvCoords.setText(location.getLatitude() + ", " + location.getLongitude());
             mHandler.post(new FindAddressForLocation());
         }
 
@@ -178,7 +184,7 @@ public class ClimbingLogActivity extends Activity {
                 e.printStackTrace();
             }
             
-            lastAddressString = lastLocation.getLatitude() + ", " + lastLocation.getLongitude();
+            lastAddressString = "";
 
             if (addresses != null) {
                 log("received " + addresses.size() + " addresses");
@@ -187,11 +193,15 @@ public class ClimbingLogActivity extends Activity {
                     lastAddress = addresses.get(0);
                     final int n = lastAddress.getMaxAddressLineIndex();
                     for (int i=0; i<=n; i++) {
-                        lastAddressString += "\n" + lastAddress.getAddressLine(i);
+                        lastAddressString += lastAddress.getAddressLine(i) + "\n";
                     }
                 }
             }
 
+            // Remove trailing newlines
+            lastAddressString = lastAddressString.trim();
+            
+            // Set coords to dialog textview
             tvLocation.setText(lastAddressString);
         }
     }
@@ -209,6 +219,36 @@ public class ClimbingLogActivity extends Activity {
                 LogEntry item = logAdapter.getItem(position);
                 log("clicked on " + item.title);
             }
-        });        
+        });
+        registerForContextMenu(lstLog);
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
+        if (v.getId() == R.id.lstLog) {
+            menu.add(Menu.NONE, CONTEXT_ITEM_EDIT, 0, "Edit");
+            menu.add(Menu.NONE, CONTEXT_ITEM_DELETE, 1, "Delete");
+        }
+    }
+    
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        int menuItemIndex = item.getItemId();
+        
+        switch (menuItemIndex) {
+        case CONTEXT_ITEM_EDIT:
+            log("edit item at pos " + info.id + " (id=" + logAdapter.getItem((int) info.id).id);
+            break;
+
+        case CONTEXT_ITEM_DELETE:
+            log("delete item at pos " + info.id + " (id=" + logAdapter.getItem((int) info.id).id);
+            break;
+            
+        default:
+            break;
+        }
+
+        return true;
     }
 }

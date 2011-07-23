@@ -1,6 +1,8 @@
 package com.tapdom.climbinglog;
 
 public class LogEntry {
+    public int id;
+    
     public String title;
 
     public Double latitude;

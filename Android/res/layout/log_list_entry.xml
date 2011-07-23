@@ -1,5 +1,22 @@
+<LinearLayout 
+    android:id="@+id/linearLayout1"
+    android:layout_width="fill_parent" 
+    android:layout_height="fill_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical">
 
-    <LinearLayout android:id="@+id/linearLayout1" android:layout_width="fill_parent" android:layout_height="fill_parent" xmlns:android="http://schemas.android.com/apk/res/android" android:orientation="vertical">
-        <TextView android:layout_height="wrap_content" android:layout_width="wrap_content" android:text="Title" android:id="@+id/tv_title"></TextView>
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/tv_date" android:text="date"></TextView>
-    </LinearLayout>
+    <TextView 
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" 
+        android:id="@+id/tv_date"
+        android:textColor="#EEEEEE"
+        android:text="date">
+    </TextView>
+    
+    <TextView 
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content" 
+        android:text="Title"
+        android:id="@+id/tv_title">
+    </TextView>
+</LinearLayout>
