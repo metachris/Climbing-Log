@@ -10,6 +10,7 @@ import android.app.AlertDialog.Builder;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -73,10 +74,15 @@ public class ClimbingLogActivity extends Activity {
         });
         
         dbHelper = new DataBaseHelper(this); // Opens and prepares database, manages queries
-        showLogListView();
+        createLogListView();
     }
 
-
+    @Override
+    public void onResume(){
+        super.onResume();
+        updateLogListView();
+    }
+    
     /*
      ****************
      * Dialog Stuff *
@@ -107,7 +113,7 @@ public class ClimbingLogActivity extends Activity {
     
     private Dialog buildAddEntryDialog() {
         LayoutInflater inflater = getLayoutInflater();
-        View layout = inflater.inflate(R.layout.add_entry, null);
+        View layout = inflater.inflate(R.layout.dialog_add_entry, null);
 
         tvLocation = (TextView) layout.findViewById(R.id.tv_location);
         tvCoords = (TextView) layout.findViewById(R.id.tv_coords);
@@ -122,10 +128,14 @@ public class ClimbingLogActivity extends Activity {
                 Double lat = (lastLocation != null) ? lastLocation.getLatitude() : null;
                 Double lng = (lastLocation != null) ? lastLocation.getLongitude() : null;
                 Long date = (lastDate != null) ? lastDate.getTime() : null;
+
                 LogEntry entry = new LogEntry(null, lat, lng, lastAddressString, null, null, date, null);
+                
+                dbHelper.open();
                 dbHelper.insert(entry);
-                logAdapter.insert(dbHelper.selectLast(), 0);  // querying from db to get the id (for edit, delete)
-                lstLog.invalidate();
+                dbHelper.close();
+                
+                updateLogListView();
             }
         });
         dialog.setNegativeButton("Cancel", null);
@@ -136,8 +146,9 @@ public class ClimbingLogActivity extends Activity {
     private void updateAddEntryDialog(AlertDialog dialog) {
         // Set date and time
         lastDate = new Date();
-        tvDate.setText(lastDate.toGMTString());
-        tvLocation.setText("Loading location...");
+        tvDate.setText(lastDate.toLocaleString());
+        tvLocation.setText("Loading...");
+        tvCoords.setText("Loading...");
     }    
 
 
@@ -206,21 +217,26 @@ public class ClimbingLogActivity extends Activity {
         }
     }
     
-    private void showLogListView() {
-        // Instantiate the adapter for attaching to the ListView
-        logAdapter = new LogListAdapter(this, R.layout.log_list_entry, dbHelper.selectAll(20));
-        
-        // Attach more games adapter to listview and set OnItemClickListener
+    private void createLogListView() {
         lstLog = (ListView) findViewById(R.id.lstLog);
-        lstLog.setAdapter(logAdapter);
         lstLog.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 LogEntry item = logAdapter.getItem(position);
-                log("clicked on " + item.title);
+                log("clicked on " + item);
             }
         });
         registerForContextMenu(lstLog);
+    }
+    
+    private void updateLogListView() {
+        // Instantiate the adapter for attaching to the ListView
+        dbHelper.open();
+        logAdapter = new LogListAdapter(this, R.layout.log_list_entry, dbHelper.selectAll(20));
+        dbHelper.close();
+        
+        lstLog.setAdapter(logAdapter);
+        lstLog.invalidate();
     }
 
     @Override
@@ -234,15 +250,25 @@ public class ClimbingLogActivity extends Activity {
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        LogEntry entry = logAdapter.getItem((int) info.id);
+
         int menuItemIndex = item.getItemId();
-        
         switch (menuItemIndex) {
         case CONTEXT_ITEM_EDIT:
-            log("edit item at pos " + info.id + " (id=" + logAdapter.getItem((int) info.id).id);
+            // Open edit-item-activity
+            Intent intent = new Intent(this, EditEntryActivity.class);
+            intent.putExtra("entry_id", entry.id);
+            startActivity(intent);
             break;
 
         case CONTEXT_ITEM_DELETE:
-            log("delete item at pos " + info.id + " (id=" + logAdapter.getItem((int) info.id).id);
+            // Delete item from db and logAdapter, and update ListView
+            dbHelper.open();
+            dbHelper.delete(entry.id);
+            dbHelper.close();
+            
+            logAdapter.remove(entry);
+            lstLog.invalidate();
             break;
             
         default:

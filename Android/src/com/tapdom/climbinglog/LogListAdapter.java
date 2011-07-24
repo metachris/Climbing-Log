@@ -45,8 +45,8 @@ public class LogListAdapter extends ArrayAdapter<LogEntry> {
         TextView tvDate = (TextView) itemView.findViewById(R.id.tv_date);
         
         // Set the item contents
-        tvTitle.setText((item.title != null) ? item.title : item.address);
-        tvDate.setText(new java.sql.Date(item.date_start).toGMTString());
+        tvTitle.setText((item.title != null) ? item.title : item.address + "\n" + item.comment);
+        tvDate.setText(new java.sql.Date(item.date_start).toLocaleString());
         
         // Return the compiled MoreGamesItemView
         return itemView;

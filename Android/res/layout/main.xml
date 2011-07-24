@@ -12,7 +12,6 @@
         android:layout_height="wrap_content" 
         android:text="Start a Climbing Entry">
     </Button>
-    <TextView android:id="@+id/textView1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:paddingTop="20dp" android:text="Recent Entries" android:textColor="#FFFFFF" android:textStyle="bold"></TextView>
 
     <ListView
         android:layout_width="fill_parent"
